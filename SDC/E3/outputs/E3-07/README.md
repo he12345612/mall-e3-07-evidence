@@ -16,8 +16,6 @@
 - [可直接粘贴文本](E3-07-可直接粘贴.txt)
 - [Word 说明书](E3-07规格先行与AI结对编程实验说明.docx)
 - [AI 使用记录](AI使用记录.md)
-- [本人录屏讲解稿](E3-07-录屏讲解稿.md)
-- [按打开顺序录屏稿](E3-07录屏讲解稿-按打开顺序.txt)
 - [改前失败日志](evidence/baseline-test.log)
 - [改后通过日志](evidence/fixed-test.log)
 - [JaCoCo 运行日志](evidence/instrumented-test.log)
