@@ -1,0 +1,89 @@
+E3-07 录屏讲解稿（约 90 秒）
+
+录制前准备
+1. 关闭个人空间、聊天和其他无关标签页。
+2. 浏览器缩放调到 100% 或 110%，确保文件名和数字清晰。
+3. 提前打开下面 7 个页面，按顺序放在 GitHub 仓库标签页之后。
+4. 确认麦克风开启，声音正常后再开始录制。
+
+第 1 段：仓库首页
+时间：0:00–0:12
+打开：
+https://github.com/he12345612/mall-e3-07-evidence
+
+讲解：
+这是我的 E3-07 证据仓库，题目是“无效地址更新清空已有默认地址”。项目基于 baseline-dcaa93b3，我用独立提交保存修复、测试和全部运行证据。最终结果是改前 6 项测试中 2 项业务失败，改后 6 项全部通过。
+
+第 2 段：题目与业务规格
+时间：0:12–0:28
+打开：
+https://github.com/meng004/mall/issues/13
+
+讲解：
+规格要求是：目标地址不存在，或者属于其他会员时，更新返回 0，并且不能发生任何写入，原来的默认地址必须保持。有效地址设置为默认时，仍按原来的顺序先清旧默认，再更新目标。
+
+第 3 段：测试代码
+时间：0:28–0:47
+打开：
+https://github.com/he12345612/mall-e3-07-evidence/blob/main/mall-portal/src/test/java/com/macro/mall/portal/sdc/E307AddressDefaultUpdateTest.java
+
+指出：
+测试类名 E307AddressDefaultUpdateTest；missingDefaultTargetDoesNotWrite；addressOwnedByAnotherMemberDoesNotWrite。
+
+讲解：
+我写了 6 项测试，覆盖不存在地址、他人地址、有效地址设默认、已是默认、普通更新和 defaultStatus 为 null。第一个关键测试是不存在地址时不能写入，原来的断言要求 updateByExampleSelective 从未被调用，没有放宽。
+
+第 4 段：改前失败日志
+时间：0:47–1:07
+打开：
+https://github.com/he12345612/mall-e3-07-evidence/blob/main/SDC/E3/outputs/E3-07/evidence/baseline-test.log
+
+指出：
+Tests run: 6, Failures: 2, Errors: 0, Skipped: 0。
+
+讲解：
+改前实际运行 6 项，2 项失败，错误和跳过都是 0。两个失败分别是不存在地址和他人地址。原因是原服务在确认目标存在之前，先把当前会员的默认地址清零，随后目标更新 0 行，默认地址已经被破坏。这不是环境错误。
+
+第 5 段：代码修改
+时间：1:07–1:28
+打开：
+https://github.com/he12345612/mall-e3-07-evidence/compare/e09f74e540610e54d55f4f68159b5d887db68170...7976fbe4adfa02275ee95e930c89e1c3edc56a3a
+
+指出：
+UmsMemberReceiveAddressServiceImpl.java 中新增的 countByExample 判断。
+
+讲解：
+最小修复是在任何写入之前，用“当前会员加目标地址 ID”确认目标可更新；计数为 0 就返回 0。这样无效目标既不会清默认，也不会更新目标。会员过滤、null 按 0 处理、事务声明和有效地址的写入顺序都保持不变。
+
+第 6 段：改后通过日志
+时间：1:28–1:42
+打开：
+https://github.com/he12345612/mall-e3-07-evidence/blob/main/SDC/E3/outputs/E3-07/evidence/fixed-test.log
+
+指出：
+Tests run: 6, Failures: 0, Errors: 0, Skipped: 0。
+
+讲解：
+使用同一组断言重新运行后，6 项全部通过，失败、错误和跳过都是 0。有效地址设默认时，测试还确认先写 0 清旧默认，再写 1 更新目标，候选更新条件始终包含当前会员 ID。
+
+第 7 段：覆盖率与结论
+时间：1:42–1:55
+打开：
+https://github.com/he12345612/mall-e3-07-evidence/blob/main/SDC/E3/outputs/E3-07/evidence/coverage.txt
+
+指出：
+LINE: missed=0, covered=17；BRANCH: missed=0, covered=6。
+
+讲解：
+目标方法的行覆盖是 17/17，分支覆盖是 6/6，方法内没有未覆盖项。这个测试使用真实服务加 Mapper 替身，不能证明真实 MySQL 提交回滚、完整 HTTP 认证链或并发行为。
+
+结束语
+时间：1:55–2:00
+讲解：
+以上就是 E3-07 从规格、改前业务失败、最小修复到回归和覆盖率记录的全部证据。
+
+录制后检查
+1. 视频时长不超过 2 分钟。
+2. 声音与画面同步，文件名和测试数字看得清。
+3. 没有出现密码、通知、聊天或个人隐私内容。
+4. 保存为 MP4，和学习通作业、GitHub 证据链接一起提交。
