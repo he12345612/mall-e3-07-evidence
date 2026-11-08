@@ -1,5 +1,17 @@
 # mall
 
+## E3-07 无效地址更新清空已有默认地址
+
+本仓库是 E3-07 的个人实验副本，基于 `baseline-dcaa93b3`。主分支保留原有项目，本次修复单独提交在本 README 所在的 `main` 分支。
+
+- 作业题目：[Issue #13](https://github.com/meng004/mall/issues/13)
+- 证据索引：[SDC/E3/outputs/E3-07/README.md](SDC/E3/outputs/E3-07/README.md)
+- 测试代码：[E307AddressDefaultUpdateTest.java](mall-portal/src/test/java/com/macro/mall/portal/sdc/E307AddressDefaultUpdateTest.java)
+- 修复位置：[UmsMemberReceiveAddressServiceImpl.java](mall-portal/src/main/java/com/macro/mall/portal/service/impl/UmsMemberReceiveAddressServiceImpl.java)
+- Word 说明：[E3-07规格先行与AI结对编程实验说明.docx](SDC/E3/outputs/E3-07/E3-07规格先行与AI结对编程实验说明.docx)
+
+验证结果：改前 6 项中 2 项业务失败，改后 6 项全部通过；目标方法行覆盖 17/17，分支覆盖 6/6。
+
 <p>
   <a href="#公众号"><img src="http://macro-oss.oss-cn-shenzhen.aliyuncs.com/mall/badge/%E5%85%AC%E4%BC%97%E5%8F%B7-macrozheng-blue.svg" alt="公众号"></a>
   <a href="#公众号"><img src="http://macro-oss.oss-cn-shenzhen.aliyuncs.com/mall/badge/%E4%BA%A4%E6%B5%81-%E5%BE%AE%E4%BF%A1%E7%BE%A4-2BA245.svg" alt="交流"></a>

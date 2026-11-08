@@ -1,0 +1,43 @@
+E3-07 无效地址更新清空已有默认地址
+
+一、选题与既有契约
+本题为 E3-07（Issue #13），基线为 baseline-dcaa93b3。调用链为 UmsMemberReceiveAddressController.update（/member/address/update/{id}）→ UmsMemberReceiveAddressServiceImpl.update → UmsMemberService.getCurrentMember() → UmsMemberReceiveAddressMapper。
+
+用户故事：作为会员，我只能更新自己的收货地址；若目标不存在或属于他人，系统应返回 0，并且不得改变我的默认地址。
+
+验收准则：1）不存在或属于其他会员的地址更新返回 0，且不发生写入；2）有效非默认地址设为默认时，先清原默认，再更新目标，返回 1；3）已是默认、普通字段更新以及 defaultStatus=null（视为 0）保持原语义和会员过滤。
+
+不可修改：表结构、接口签名和 UmsMemberReceiveAddressService#update 上的 @Transactional；不扩展并发唯一默认、添加和删除地址规则。
+
+二、第一个失败测试及原因
+第一个业务测试是 missingDefaultTargetDoesNotWrite。当前会员为 101，目标 999 不存在，请求 defaultStatus=1，期望返回 0，并断言 updateByExampleSelective 从未调用。
+
+它在修改前必然失败：原服务在确认目标是否存在之前，就按“当前会员且默认状态为 1”清掉原默认，之后再更新目标；目标更新为 0 行时，原默认已经被清空。改前实际结果为 Tests run: 6, Failures: 2, Errors: 0, Skipped: 0。两个失败分别覆盖不存在地址和他人地址，Mockito 均显示先清默认、再更新目标两次写调用。编译、依赖和连接均正常，因此这是业务红灯。
+
+三、最小修改及依据
+在 UmsMemberReceiveAddressServiceImpl.java:46 增加三项逻辑：使用原有的“当前会员 ID + 目标地址 ID”条件执行 countByExample；计数为 0 时直接返回 0。检查发生在任何写入之前，因此无效目标不会清默认，也不会更新目标。
+
+保留原会员过滤、defaultStatus=null 视为 0、先清原默认再更新目标的顺序以及事务声明。没有改表结构、接口签名或并发规则。
+
+AI 曾提议“先更新目标再清默认”，我拒绝该方案，因为后一次清默认仍按“当前会员且默认=1”筛选，会把刚设置成默认的目标再次清为 0。
+
+四、断言未放宽与回归
+原来的“无效目标不写入”断言没有删除，也没有弱化，仍是 verify(addressMapper, never()).updateByExampleSelective(any(), any())。
+
+有效地址设为默认时，测试捕获两次写入并确认顺序为：先把当前会员原默认改为 0，再把目标更新为 1；目标更新条件仍为当前会员 101 和地址 321。普通字段更新、null 和非默认更新只发生一次目标更新。改后同一组测试为 Tests run: 6, Failures: 0, Errors: 0, Skipped: 0。
+
+五、覆盖率与数据流
+JaCoCo 统计目标方法 UmsMemberReceiveAddressServiceImpl.update：行覆盖 17/17，分支覆盖 6/6，指令覆盖 73/73，方法内没有未覆盖项。
+
+数据流：控制器传地址 ID 和请求体 → 获取当前会员 → 查询当前会员与目标 ID 是否可更新 → 有效且请求设为默认时清原默认 → 按当前会员与地址条件更新目标。覆盖率和 Mock 测试证明该方法的可执行行、三个条件和与 Mapper 的交互；不证明真实数据库提交/回滚、事务代理、HTTP 认证链或并发行为。
+
+六、AI 使用与证据说明
+AI 辅助读取 Issue、设计六个行为测试、提出“先确认目标可更新再清默认”，并生成最小修复。采纳依据是检查位于所有写入之前且保持原写入顺序；拒绝“先更新后清默认”是因为会清掉目标本身。人工核对内容包括 example 的会员/地址条件、两次写入顺序、null 归一化、断言强度和事务声明。
+
+改前日志：evidence/baseline-test.log
+改后日志：evidence/fixed-test.log
+代码差异：evidence/changes.patch
+覆盖率：evidence/coverage.txt、evidence/coverage.xml、evidence/coverage-html
+源文件：source/UmsMemberReceiveAddressServiceImpl.java、source/E307AddressDefaultUpdateTest.java
+
+本次不是历史回放：测试确实先运行于未修复基线并取得业务失败，随后才修改产品代码。未验证隔离 MySQL 的真实提交/回滚、完整 HTTP 认证链和并发；录屏由本人按证据讲解。

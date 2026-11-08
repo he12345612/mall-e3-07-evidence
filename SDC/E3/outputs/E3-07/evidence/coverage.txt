@@ -1,0 +1,12 @@
+JaCoCo 0.8.13
+Target: com.macro.mall.portal.service.impl.UmsMemberReceiveAddressServiceImpl#update(java.lang.Long, com.macro.mall.model.UmsMemberReceiveAddress)
+
+INSTRUCTION: missed=0, covered=73
+BRANCH:      missed=0, covered=6
+LINE:        missed=0, covered=17
+COMPLEXITY:  missed=0, covered=4
+METHOD:      missed=0, covered=1
+
+Uncovered scope: none inside the target method.
+Verification limit: service behavior with mapper test doubles; no real database,
+transaction proxy, HTTP authentication chain, or concurrency verification.
